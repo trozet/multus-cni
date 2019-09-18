@@ -17,6 +17,7 @@ package k8sclient
 
 import (
 	"fmt"
+	"github.com/intel/multus-cni/types/v1"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -27,8 +28,6 @@ import (
 	testutils "github.com/intel/multus-cni/testing"
 
 	"github.com/containernetworking/cni/pkg/skel"
-	"github.com/intel/multus-cni/types"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -307,7 +306,7 @@ var _ = Describe("k8sclient operations", func() {
 			"clusterNetwork": "myCRD1",
 			"kubeconfig":"/etc/kubernetes/node-kubeconfig.yaml"
 		}`
-		netConf, err := types.LoadNetConf([]byte(conf))
+		netConf, err := v1.LoadNetConf([]byte(conf))
 		Expect(err).NotTo(HaveOccurred())
 
 		args := &skel.CmdArgs{
@@ -338,7 +337,7 @@ var _ = Describe("k8sclient operations", func() {
 			"defaultNetworks": ["myCRD2"],
 			"kubeconfig":"/etc/kubernetes/node-kubeconfig.yaml"
 		}`
-		netConf, err := types.LoadNetConf([]byte(conf))
+		netConf, err := v1.LoadNetConf([]byte(conf))
 		Expect(err).NotTo(HaveOccurred())
 
 		args := &skel.CmdArgs{
@@ -374,7 +373,7 @@ var _ = Describe("k8sclient operations", func() {
 			"defaultNetworks": ["myCRD2"],
 			"kubeconfig":"/etc/kubernetes/node-kubeconfig.yaml"
 		}`
-		netConf, err := types.LoadNetConf([]byte(conf))
+		netConf, err := v1.LoadNetConf([]byte(conf))
 		Expect(err).NotTo(HaveOccurred())
 
 		args := &skel.CmdArgs{
@@ -405,7 +404,7 @@ var _ = Describe("k8sclient operations", func() {
 			"clusterNetwork": "myFile1",
 			"kubeconfig":"/etc/kubernetes/node-kubeconfig.yaml"
 		}`
-		netConf, err := types.LoadNetConf([]byte(conf))
+		netConf, err := v1.LoadNetConf([]byte(conf))
 		netConf.ConfDir = tmpDir
 		Expect(err).NotTo(HaveOccurred())
 
@@ -441,7 +440,7 @@ var _ = Describe("k8sclient operations", func() {
 			"clusterNetwork": "%s",
 			"kubeconfig":"/etc/kubernetes/node-kubeconfig.yaml"
 		}`, tmpDir)
-		netConf, err := types.LoadNetConf([]byte(conf))
+		netConf, err := v1.LoadNetConf([]byte(conf))
 		Expect(err).NotTo(HaveOccurred())
 
 		args := &skel.CmdArgs{
@@ -476,7 +475,7 @@ var _ = Describe("k8sclient operations", func() {
 			"clusterNetwork": "myCRD1",
 			"kubeconfig":"/etc/kubernetes/node-kubeconfig.yaml"
 		}`
-		netConf, err := types.LoadNetConf([]byte(conf))
+		netConf, err := v1.LoadNetConf([]byte(conf))
 		Expect(err).NotTo(HaveOccurred())
 
 		args := &skel.CmdArgs{
@@ -503,7 +502,7 @@ var _ = Describe("k8sclient operations", func() {
 			"multusNamespace" : "kube-system",
 			"kubeconfig":"/etc/kubernetes/node-kubeconfig.yaml"
 		}`
-		netConf, err := types.LoadNetConf([]byte(conf))
+		netConf, err := v1.LoadNetConf([]byte(conf))
 		Expect(err).NotTo(HaveOccurred())
 
 		args := &skel.CmdArgs{
@@ -541,7 +540,7 @@ var _ = Describe("k8sclient operations", func() {
 			"multusNamespace" : "kube-system",
 			"kubeconfig":"/etc/kubernetes/node-kubeconfig.yaml"
 		}`
-		netConf, err := types.LoadNetConf([]byte(conf))
+		netConf, err := v1.LoadNetConf([]byte(conf))
 		Expect(err).NotTo(HaveOccurred())
 
 		args := &skel.CmdArgs{
@@ -578,7 +577,7 @@ var _ = Describe("k8sclient operations", func() {
 				"name": "net2"
 			}]
 		}`
-		netConf, err := types.LoadNetConf([]byte(conf))
+		netConf, err := v1.LoadNetConf([]byte(conf))
 		Expect(netConf.Delegates[0].Conf.Name).To(Equal("net2"))
 		Expect(netConf.Delegates[0].Conf.Type).To(Equal("mynet2"))
 		Expect(err).NotTo(HaveOccurred())
@@ -613,7 +612,7 @@ var _ = Describe("k8sclient operations", func() {
 				"name": "net2"
 			}]
 		}`
-		netConf, err := types.LoadNetConf([]byte(conf))
+		netConf, err := v1.LoadNetConf([]byte(conf))
 		Expect(netConf.Delegates[0].Conf.Name).To(Equal("net2"))
 		Expect(netConf.Delegates[0].Conf.Type).To(Equal("mynet2"))
 		Expect(err).NotTo(HaveOccurred())
@@ -645,7 +644,7 @@ var _ = Describe("k8sclient operations", func() {
 				"name": "net2"
 			}]
 		}`
-		netConf, err := types.LoadNetConf([]byte(conf))
+		netConf, err := v1.LoadNetConf([]byte(conf))
 		Expect(netConf.Delegates[0].Conf.Name).To(Equal("net2"))
 		Expect(netConf.Delegates[0].Conf.Type).To(Equal("mynet2"))
 		Expect(err).NotTo(HaveOccurred())
@@ -704,7 +703,7 @@ users:
 				"name": "net2"
 			}]
 		}`
-		netConf, err := types.LoadNetConf([]byte(conf))
+		netConf, err := v1.LoadNetConf([]byte(conf))
 		Expect(netConf.Delegates[0].Conf.Name).To(Equal("net2"))
 		Expect(netConf.Delegates[0].Conf.Type).To(Equal("mynet2"))
 		Expect(err).NotTo(HaveOccurred())
@@ -739,7 +738,7 @@ users:
 			"namespaceIsolation": true
 		}`
 
-		netConf, err := types.LoadNetConf([]byte(conf))
+		netConf, err := v1.LoadNetConf([]byte(conf))
 		Expect(err).NotTo(HaveOccurred())
 
 		net1 := `{
@@ -787,7 +786,7 @@ users:
 				"multusNamespace" : "kube-system",
 				"kubeconfig":"/etc/kubernetes/node-kubeconfig.yaml"
 			}`
-			netConf, err := types.LoadNetConf([]byte(conf))
+			netConf, err := v1.LoadNetConf([]byte(conf))
 			Expect(err).NotTo(HaveOccurred())
 
 			args := &skel.CmdArgs{
@@ -981,18 +980,18 @@ users:
 			}
 		}`
 
-			delegate, err := types.LoadDelegateNetConf([]byte(conf), nil, "0000:00:00.0")
+			delegate, err := v1.LoadDelegateNetConf([]byte(conf), nil, "0000:00:00.0")
 			Expect(err).NotTo(HaveOccurred())
 
-			delegateNetStatus, err := types.LoadNetworkStatus(result, delegate.Conf.Name, delegate.MasterPlugin)
+			delegateNetStatus, err := v1.LoadNetworkStatus(result, delegate.Conf.Name, delegate.MasterPlugin)
 			GinkgoT().Logf("delegateNetStatus %+v\n", delegateNetStatus)
 			Expect(err).NotTo(HaveOccurred())
 
-			netstatus := []*types.NetworkStatus{delegateNetStatus}
+			netstatus := []*v1.NetworkStatus{delegateNetStatus}
 
 			fakePod := testutils.NewFakePod("testpod", "kube-system/net1", "")
 
-			netConf, err := types.LoadNetConf([]byte(conf))
+			netConf, err := v1.LoadNetConf([]byte(conf))
 			Expect(err).NotTo(HaveOccurred())
 
 			net1 := `{
@@ -1063,18 +1062,18 @@ users:
 			}
 		}`
 
-			delegate, err := types.LoadDelegateNetConf([]byte(conf), nil, "0000:00:00.0")
+			delegate, err := v1.LoadDelegateNetConf([]byte(conf), nil, "0000:00:00.0")
 			Expect(err).NotTo(HaveOccurred())
 
-			delegateNetStatus, err := types.LoadNetworkStatus(result, delegate.Conf.Name, delegate.MasterPlugin)
+			delegateNetStatus, err := v1.LoadNetworkStatus(result, delegate.Conf.Name, delegate.MasterPlugin)
 			GinkgoT().Logf("delegateNetStatus %+v\n", delegateNetStatus)
 			Expect(err).NotTo(HaveOccurred())
 
-			netstatus := []*types.NetworkStatus{delegateNetStatus}
+			netstatus := []*v1.NetworkStatus{delegateNetStatus}
 
 			fakePod := testutils.NewFakePod("testpod", "kube-system/net1", "")
 
-			netConf, err := types.LoadNetConf([]byte(conf))
+			netConf, err := v1.LoadNetConf([]byte(conf))
 			Expect(err).NotTo(HaveOccurred())
 
 			net1 := `{
@@ -1121,18 +1120,18 @@ users:
 		}`
 			// note that the provided kubeconfig is invalid
 
-			delegate, err := types.LoadDelegateNetConf([]byte(conf), nil, "")
+			delegate, err := v1.LoadDelegateNetConf([]byte(conf), nil, "")
 			Expect(err).NotTo(HaveOccurred())
 
-			delegateNetStatus, err := types.LoadNetworkStatus(result, delegate.Conf.Name, delegate.MasterPlugin)
+			delegateNetStatus, err := v1.LoadNetworkStatus(result, delegate.Conf.Name, delegate.MasterPlugin)
 			GinkgoT().Logf("delegateNetStatus %+v\n", delegateNetStatus)
 			Expect(err).NotTo(HaveOccurred())
 
-			netstatus := []*types.NetworkStatus{delegateNetStatus}
+			netstatus := []*v1.NetworkStatus{delegateNetStatus}
 
 			fakePod := testutils.NewFakePod("testpod", "kube-system/net1", "")
 
-			netConf, err := types.LoadNetConf([]byte(conf))
+			netConf, err := v1.LoadNetConf([]byte(conf))
 			Expect(err).NotTo(HaveOccurred())
 
 			net1 := `{
@@ -1178,18 +1177,18 @@ users:
 			}
 		}`
 
-			delegate, err := types.LoadDelegateNetConf([]byte(conf), nil, "0000:00:00.0")
+			delegate, err := v1.LoadDelegateNetConf([]byte(conf), nil, "0000:00:00.0")
 			Expect(err).NotTo(HaveOccurred())
 
-			delegateNetStatus, err := types.LoadNetworkStatus(result, delegate.Conf.Name, delegate.MasterPlugin)
+			delegateNetStatus, err := v1.LoadNetworkStatus(result, delegate.Conf.Name, delegate.MasterPlugin)
 			GinkgoT().Logf("delegateNetStatus %+v\n", delegateNetStatus)
 			Expect(err).NotTo(HaveOccurred())
 
-			netstatus := []*types.NetworkStatus{delegateNetStatus}
+			netstatus := []*v1.NetworkStatus{delegateNetStatus}
 
 			fakePod := testutils.NewFakePod("testpod", "kube-system/net1", "")
 
-			netConf, err := types.LoadNetConf([]byte(conf))
+			netConf, err := v1.LoadNetConf([]byte(conf))
 			Expect(err).NotTo(HaveOccurred())
 
 			net1 := `{

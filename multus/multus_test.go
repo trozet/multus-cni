@@ -33,10 +33,9 @@ import (
 	"github.com/containernetworking/plugins/pkg/ns"
 	"github.com/containernetworking/plugins/pkg/testutils"
 	"github.com/intel/multus-cni/k8sclient"
+	types "github.com/intel/multus-cni/types/v1"
 	"github.com/intel/multus-cni/logging"
 	testhelpers "github.com/intel/multus-cni/testing"
-	"github.com/intel/multus-cni/types"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

@@ -2,6 +2,7 @@ package kubeletclient
 
 import (
 	"context"
+	v12 "github.com/intel/multus-cni/types/v1"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -15,7 +16,6 @@ import (
 	k8sTypes "k8s.io/apimachinery/pkg/types"
 	"k8s.io/kubernetes/pkg/kubelet/util"
 
-	mtypes "github.com/intel/multus-cni/types"
 	podresourcesapi "k8s.io/kubernetes/pkg/kubelet/apis/podresources/v1alpha1"
 )
 
@@ -144,8 +144,8 @@ var _ = Describe("Kubelet resource endpoint data read operations", func() {
 			client, err := getKubeletClient()
 			Expect(err).NotTo(HaveOccurred())
 
-			outputRMap := map[string]*mtypes.ResourceInfo{
-				"resource": &mtypes.ResourceInfo{DeviceIDs: []string{"dev0", "dev1"}},
+			outputRMap := map[string]*v12.ResourceInfo{
+				"resource": &v12.ResourceInfo{DeviceIDs: []string{"dev0", "dev1"}},
 			}
 			resourceMap, err := client.GetPodResourceMap(fakePod)
 			Expect(err).NotTo(HaveOccurred())
@@ -173,8 +173,8 @@ var _ = Describe("Kubelet resource endpoint data read operations", func() {
 			client, err := getKubeletClient()
 			Expect(err).NotTo(HaveOccurred())
 
-			outputRMap := map[string]*mtypes.ResourceInfo{
-				"resource": &mtypes.ResourceInfo{DeviceIDs: []string{"dev0", "dev1"}},
+			outputRMap := map[string]*v12.ResourceInfo{
+				"resource": &v12.ResourceInfo{DeviceIDs: []string{"dev0", "dev1"}},
 			}
 			resourceMap, err := client.GetPodResourceMap(fakePod)
 			Expect(err).NotTo(HaveOccurred())
@@ -240,7 +240,7 @@ var _ = Describe("Kubelet resource endpoint data read operations", func() {
 			client, err := getKubeletClient()
 			Expect(err).NotTo(HaveOccurred())
 
-			emptyRMap := map[string]*mtypes.ResourceInfo{}
+			emptyRMap := map[string]*v12.ResourceInfo{}
 			resourceMap, err := client.GetPodResourceMap(fakePod)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(resourceMap).ShouldNot(BeNil())

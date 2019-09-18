@@ -1,13 +1,13 @@
 package kubeletclient
 
 import (
+	v12 "github.com/intel/multus-cni/types/v1"
 	"os"
 	"path/filepath"
 	"time"
 
 	"github.com/intel/multus-cni/checkpoint"
 	"github.com/intel/multus-cni/logging"
-	"github.com/intel/multus-cni/types"
 	"golang.org/x/net/context"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/kubernetes/pkg/kubelet/apis/podresources"
@@ -26,7 +26,7 @@ var (
 )
 
 // GetResourceClient returns an instance of ResourceClient interface initialized with Pod resource information
-func GetResourceClient() (types.ResourceClient, error) {
+func GetResourceClient() (v12.ResourceClient, error) {
 	// If Kubelet resource API endpoint exist use that by default
 	// Or else fallback with checkpoint file
 	if hasKubeletAPIEndpoint() {
@@ -38,7 +38,7 @@ func GetResourceClient() (types.ResourceClient, error) {
 	return checkpoint.GetCheckpoint()
 }
 
-func getKubeletClient() (types.ResourceClient, error) {
+func getKubeletClient() (v12.ResourceClient, error) {
 	newClient := &kubeletClient{}
 	if kubeletSocket == "" {
 		kubeletSocket = util.LocalEndpoint(defaultPodResourcesPath, podresources.Socket)
@@ -76,8 +76,8 @@ func (rc *kubeletClient) getPodResources(client podresourcesapi.PodResourcesList
 }
 
 // GetPodResourceMap returns an instance of a map of Pod ResourceInfo given a (Pod name, namespace) tuple
-func (rc *kubeletClient) GetPodResourceMap(pod *v1.Pod) (map[string]*types.ResourceInfo, error) {
-	resourceMap := make(map[string]*types.ResourceInfo)
+func (rc *kubeletClient) GetPodResourceMap(pod *v1.Pod) (map[string]*v12.ResourceInfo, error) {
+	resourceMap := make(map[string]*v12.ResourceInfo)
 
 	name := pod.Name
 	ns := pod.Namespace
@@ -93,7 +93,7 @@ func (rc *kubeletClient) GetPodResourceMap(pod *v1.Pod) (map[string]*types.Resou
 					if rInfo, ok := resourceMap[dev.ResourceName]; ok {
 						rInfo.DeviceIDs = append(rInfo.DeviceIDs, dev.DeviceIds...)
 					} else {
-						resourceMap[dev.ResourceName] = &types.ResourceInfo{DeviceIDs: dev.DeviceIds}
+						resourceMap[dev.ResourceName] = &v12.ResourceInfo{DeviceIDs: dev.DeviceIds}
 					}
 				}
 			}

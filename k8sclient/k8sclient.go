@@ -17,6 +17,7 @@ package k8sclient
 import (
 	"encoding/json"
 	"fmt"
+	v12 "github.com/intel/multus-cni/types/v1"
 	"os"
 	"regexp"
 	"strings"
@@ -33,7 +34,6 @@ import (
 	cnitypes "github.com/containernetworking/cni/pkg/types"
 	"github.com/intel/multus-cni/kubeletclient"
 	"github.com/intel/multus-cni/logging"
-	"github.com/intel/multus-cni/types"
 )
 
 const (
@@ -75,7 +75,7 @@ func (d *defaultKubeClient) UpdatePodStatus(pod *v1.Pod) (*v1.Pod, error) {
 	return d.client.Core().Pods(pod.Namespace).UpdateStatus(pod)
 }
 
-func setKubeClientInfo(c *ClientInfo, client KubeClient, k8sArgs *types.K8sArgs) {
+func setKubeClientInfo(c *ClientInfo, client KubeClient, k8sArgs *v12.K8sArgs) {
 	logging.Debugf("setKubeClientInfo: %v, %v, %v", c, client, k8sArgs)
 	c.Client = client
 	c.Podnamespace = string(k8sArgs.K8S_POD_NAMESPACE)
@@ -83,7 +83,7 @@ func setKubeClientInfo(c *ClientInfo, client KubeClient, k8sArgs *types.K8sArgs)
 }
 
 // SetNetworkStatus sets network status into Pod annotation
-func SetNetworkStatus(client KubeClient, k8sArgs *types.K8sArgs, netStatus []*types.NetworkStatus, conf *types.NetConf) error {
+func SetNetworkStatus(client KubeClient, k8sArgs *v12.K8sArgs, netStatus []*v12.NetworkStatus, conf *v12.NetConf) error {
 	logging.Debugf("SetNetworkStatus: %v, %v, %v, %v", client, k8sArgs, netStatus, conf)
 
 	client, err := GetK8sClient(conf.Kubeconfig, client)
@@ -196,8 +196,8 @@ func parsePodNetworkObjectName(podnetwork string) (string, string, string, error
 	return netNsName, networkName, netIfName, nil
 }
 
-func parsePodNetworkAnnotation(podNetworks, defaultNamespace string) ([]*types.NetworkSelectionElement, error) {
-	var networks []*types.NetworkSelectionElement
+func parsePodNetworkAnnotation(podNetworks, defaultNamespace string) ([]*v12.NetworkSelectionElement, error) {
+	var networks []*v12.NetworkSelectionElement
 
 	logging.Debugf("parsePodNetworkAnnotation: %s, %s", podNetworks, defaultNamespace)
 	if podNetworks == "" {
@@ -220,7 +220,7 @@ func parsePodNetworkAnnotation(podNetworks, defaultNamespace string) ([]*types.N
 				return nil, logging.Errorf("parsePodNetworkAnnotation: %v", err)
 			}
 
-			networks = append(networks, &types.NetworkSelectionElement{
+			networks = append(networks, &v12.NetworkSelectionElement{
 				Name:             networkName,
 				Namespace:        netNsName,
 				InterfaceRequest: netIfName,
@@ -315,12 +315,12 @@ func getCNIConfigFromSpec(configData, netName string) ([]byte, error) {
 	return configBytes, nil
 }
 
-func cniConfigFromNetworkResource(customResource *types.NetworkAttachmentDefinition, confdir string) ([]byte, error) {
+func cniConfigFromNetworkResource(customResource *v12.NetworkAttachmentDefinition, confdir string) ([]byte, error) {
 	var config []byte
 	var err error
 
 	logging.Debugf("cniConfigFromNetworkResource: %v, %s", customResource, confdir)
-	emptySpec := types.NetworkAttachmentDefinitionSpec{}
+	emptySpec := v12.NetworkAttachmentDefinitionSpec{}
 	if customResource.Spec == emptySpec {
 		// Network Spec empty; generate delegate from CNI JSON config
 		// from the configuration directory that has the same network
@@ -342,7 +342,7 @@ func cniConfigFromNetworkResource(customResource *types.NetworkAttachmentDefinit
 	return config, nil
 }
 
-func getKubernetesDelegate(client KubeClient, net *types.NetworkSelectionElement, confdir string, pod *v1.Pod, resourceMap map[string]*types.ResourceInfo) (*types.DelegateNetConf, map[string]*types.ResourceInfo, error) {
+func getKubernetesDelegate(client KubeClient, net *v12.NetworkSelectionElement, confdir string, pod *v1.Pod, resourceMap map[string]*v12.ResourceInfo) (*v12.DelegateNetConf, map[string]*v12.ResourceInfo, error) {
 
 	logging.Debugf("getKubernetesDelegate: %v, %v, %s", client, net, confdir)
 	rawPath := fmt.Sprintf("/apis/k8s.cni.cncf.io/v1/namespaces/%s/network-attachment-definitions/%s", net.Namespace, net.Name)
@@ -351,7 +351,7 @@ func getKubernetesDelegate(client KubeClient, net *types.NetworkSelectionElement
 		return nil, resourceMap, logging.Errorf("getKubernetesDelegate: failed to get network resource, refer Multus README.md for the usage guide: %v", err)
 	}
 
-	customResource := &types.NetworkAttachmentDefinition{}
+	customResource := &v12.NetworkAttachmentDefinition{}
 	if err := json.Unmarshal(netData, customResource); err != nil {
 		return nil, resourceMap, logging.Errorf("getKubernetesDelegate: failed to get the netplugin data: %v", err)
 	}
@@ -390,7 +390,7 @@ func getKubernetesDelegate(client KubeClient, net *types.NetworkSelectionElement
 		return nil, resourceMap, err
 	}
 
-	delegate, err := types.LoadDelegateNetConf(configBytes, net, deviceID)
+	delegate, err := v12.LoadDelegateNetConf(configBytes, net, deviceID)
 	if err != nil {
 		return nil, resourceMap, err
 	}
@@ -406,8 +406,8 @@ type KubeClient interface {
 }
 
 // GetK8sArgs gets k8s related args from CNI args
-func GetK8sArgs(args *skel.CmdArgs) (*types.K8sArgs, error) {
-	k8sArgs := &types.K8sArgs{}
+func GetK8sArgs(args *skel.CmdArgs) (*v12.K8sArgs, error) {
+	k8sArgs := &v12.K8sArgs{}
 
 	logging.Debugf("GetK8sArgs: %v", args)
 	err := cnitypes.LoadArgs(args.Args, k8sArgs)
@@ -420,7 +420,7 @@ func GetK8sArgs(args *skel.CmdArgs) (*types.K8sArgs, error) {
 
 // TryLoadPodDelegates attempts to load Kubernetes-defined delegates and add them to the Multus config.
 // Returns the number of Kubernetes-defined delegates added or an error.
-func TryLoadPodDelegates(k8sArgs *types.K8sArgs, conf *types.NetConf, kubeClient KubeClient) (int, *ClientInfo, error) {
+func TryLoadPodDelegates(k8sArgs *v12.K8sArgs, conf *v12.NetConf, kubeClient KubeClient) (int, *ClientInfo, error) {
 	var err error
 	clientInfo := &ClientInfo{}
 
@@ -519,7 +519,7 @@ func GetK8sClient(kubeconfig string, kubeClient KubeClient) (KubeClient, error) 
 }
 
 // GetPodNetwork gets net-attach-def annotation from pod
-func GetPodNetwork(pod *v1.Pod) ([]*types.NetworkSelectionElement, error) {
+func GetPodNetwork(pod *v1.Pod) ([]*v12.NetworkSelectionElement, error) {
 	logging.Debugf("GetPodNetwork: %v", pod)
 
 	netAnnot := pod.Annotations[networkAttachmentAnnot]
@@ -537,14 +537,14 @@ func GetPodNetwork(pod *v1.Pod) ([]*types.NetworkSelectionElement, error) {
 }
 
 // GetNetworkDelegates returns delegatenetconf from net-attach-def annotation in pod
-func GetNetworkDelegates(k8sclient KubeClient, pod *v1.Pod, networks []*types.NetworkSelectionElement, confdir string, confnamespaceIsolation bool) ([]*types.DelegateNetConf, error) {
+func GetNetworkDelegates(k8sclient KubeClient, pod *v1.Pod, networks []*v12.NetworkSelectionElement, confdir string, confnamespaceIsolation bool) ([]*v12.DelegateNetConf, error) {
 	logging.Debugf("GetNetworkDelegates: %v, %v, %v, %v, %v", k8sclient, pod, networks, confdir, confnamespaceIsolation)
 	// resourceMap holds Pod device allocation information; only initizized if CRD contains 'resourceName' annotation.
 	// This will only be initialized once and all delegate objects can reference this to look up device info.
-	var resourceMap map[string]*types.ResourceInfo
+	var resourceMap map[string]*v12.ResourceInfo
 
 	// Read all network objects referenced by 'networks'
-	var delegates []*types.DelegateNetConf
+	var delegates []*v12.DelegateNetConf
 	defaultNamespace := pod.ObjectMeta.Namespace
 
 	for _, net := range networks {
@@ -568,7 +568,7 @@ func GetNetworkDelegates(k8sclient KubeClient, pod *v1.Pod, networks []*types.Ne
 	return delegates, nil
 }
 
-func getDefaultNetDelegateCRD(client KubeClient, net, confdir, namespace string) (*types.DelegateNetConf, error) {
+func getDefaultNetDelegateCRD(client KubeClient, net, confdir, namespace string) (*v12.DelegateNetConf, error) {
 	logging.Debugf("getDefaultNetDelegateCRD: %v, %v, %s, %s", client, net, confdir, namespace)
 	rawPath := fmt.Sprintf("/apis/k8s.cni.cncf.io/v1/namespaces/%s/network-attachment-definitions/%s", namespace, net)
 	netData, err := client.GetRawWithPath(rawPath)
@@ -576,7 +576,7 @@ func getDefaultNetDelegateCRD(client KubeClient, net, confdir, namespace string)
 		return nil, logging.Errorf("getDefaultNetDelegateCRD: failed to get network resource, refer Multus README.md for the usage guide: %v", err)
 	}
 
-	customResource := &types.NetworkAttachmentDefinition{}
+	customResource := &v12.NetworkAttachmentDefinition{}
 	if err := json.Unmarshal(netData, customResource); err != nil {
 		return nil, logging.Errorf("getDefaultNetDelegateCRD: failed to get the netplugin data: %v", err)
 	}
@@ -586,7 +586,7 @@ func getDefaultNetDelegateCRD(client KubeClient, net, confdir, namespace string)
 		return nil, err
 	}
 
-	delegate, err := types.LoadDelegateNetConf(configBytes, nil, "")
+	delegate, err := v12.LoadDelegateNetConf(configBytes, nil, "")
 	if err != nil {
 		return nil, err
 	}
@@ -594,7 +594,7 @@ func getDefaultNetDelegateCRD(client KubeClient, net, confdir, namespace string)
 	return delegate, nil
 }
 
-func getNetDelegate(client KubeClient, netname, confdir, namespace string) (*types.DelegateNetConf, error) {
+func getNetDelegate(client KubeClient, netname, confdir, namespace string) (*v12.DelegateNetConf, error) {
 	logging.Debugf("getNetDelegate: %v, %v, %v, %s", client, netname, confdir, namespace)
 	// option1) search CRD object for the network
 	delegate, err := getDefaultNetDelegateCRD(client, netname, confdir, namespace)
@@ -606,7 +606,7 @@ func getNetDelegate(client KubeClient, netname, confdir, namespace string) (*typ
 	var configBytes []byte
 	configBytes, err = getCNIConfigFromFile(netname, confdir)
 	if err == nil {
-		delegate, err := types.LoadDelegateNetConf(configBytes, nil, "")
+		delegate, err := v12.LoadDelegateNetConf(configBytes, nil, "")
 		if err != nil {
 			return nil, err
 		}
@@ -625,7 +625,7 @@ func getNetDelegate(client KubeClient, netname, confdir, namespace string) (*typ
 				var configBytes []byte
 				configBytes, err = getCNIConfigFromFile("", netname)
 				if err == nil {
-					delegate, err := types.LoadDelegateNetConf(configBytes, nil, "")
+					delegate, err := v12.LoadDelegateNetConf(configBytes, nil, "")
 					if err != nil {
 						return nil, err
 					}
@@ -639,9 +639,9 @@ func getNetDelegate(client KubeClient, netname, confdir, namespace string) (*typ
 }
 
 // GetDefaultNetworks parses 'defaultNetwork' config, gets network json and put it into netconf.Delegates.
-func GetDefaultNetworks(k8sArgs *types.K8sArgs, conf *types.NetConf, kubeClient KubeClient) error {
+func GetDefaultNetworks(k8sArgs *v12.K8sArgs, conf *v12.NetConf, kubeClient KubeClient) error {
 	logging.Debugf("GetDefaultNetworks: %v, %v, %v", k8sArgs, conf, kubeClient)
-	var delegates []*types.DelegateNetConf
+	var delegates []*v12.DelegateNetConf
 
 	kubeClient, err := GetK8sClient(conf.Kubeconfig, kubeClient)
 	if err != nil {
@@ -663,7 +663,7 @@ func GetDefaultNetworks(k8sArgs *types.K8sArgs, conf *types.NetConf, kubeClient 
 	delegates = append(delegates, delegate)
 
 	// Pod in kube-system namespace does not have default network for now.
-	if !types.CheckSystemNamespaces(string(k8sArgs.K8S_POD_NAMESPACE), conf.SystemNamespaces) {
+	if !v12.CheckSystemNamespaces(string(k8sArgs.K8S_POD_NAMESPACE), conf.SystemNamespaces) {
 		for _, netname := range conf.DefaultNetworks {
 			delegate, err := getNetDelegate(kubeClient, netname, conf.ConfDir, conf.MultusNamespace)
 			if err != nil {
@@ -681,7 +681,7 @@ func GetDefaultNetworks(k8sArgs *types.K8sArgs, conf *types.NetConf, kubeClient 
 }
 
 // tryLoadK8sPodDefaultNetwork get pod default network from annotations
-func tryLoadK8sPodDefaultNetwork(kubeClient KubeClient, pod *v1.Pod, conf *types.NetConf) (*types.DelegateNetConf, error) {
+func tryLoadK8sPodDefaultNetwork(kubeClient KubeClient, pod *v1.Pod, conf *v12.NetConf) (*v12.DelegateNetConf, error) {
 	var netAnnot string
 	logging.Debugf("tryLoadK8sPodDefaultNetwork: %v, %v, %v", kubeClient, pod, conf)
 

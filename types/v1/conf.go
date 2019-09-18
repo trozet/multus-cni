@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-package types
+package v1
 
 import (
 	"encoding/json"

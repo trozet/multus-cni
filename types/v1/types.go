@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-package types
+package v1
 
 import (
 	"net"
@@ -95,12 +95,17 @@ type DelegateNetConf struct {
 	Bytes []byte
 }
 
+// +genclient
+// +genclient:noStatus
+// +k8s:deepcopy-gen=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
 // NetworkAttachmentDefinition represents net-attach-def of K8s NPWG spec
 type NetworkAttachmentDefinition struct {
 	metav1.TypeMeta `json:",inline"`
 	// Note that ObjectMeta is mandatory, as an object
 	// name is required
-	Metadata metav1.ObjectMeta `json:"metadata,omitempty" description:"standard object metadata"`
+	metav1.ObjectMeta `json:"metadata,omitempty" description:"standard object metadata"`
 
 	// Specification describing how to invoke a CNI plugin to
 	// add or remove network attachments for a Pod.
@@ -111,6 +116,16 @@ type NetworkAttachmentDefinition struct {
 	// +optional
 	Spec NetworkAttachmentDefinitionSpec `json:"spec"`
 }
+
+// +k8s:deepcopy-gen=true
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+type NetworkAttachmentDefinitionList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata"`
+	Items           []NetworkAttachmentDefinition `json:"items"`
+}
+
 
 // NetworkAttachmentDefinitionSpec represents net-attach-def spec of K8s NPWG spec
 type NetworkAttachmentDefinitionSpec struct {
@@ -159,6 +174,8 @@ type ResourceInfo struct {
 	Index     int
 	DeviceIDs []string
 }
+
+// +k8s:deepcopy-gen=false
 
 // ResourceClient provides a kubelet Pod resource handle
 type ResourceClient interface {

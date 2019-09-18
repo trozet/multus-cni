@@ -38,7 +38,7 @@ import (
 	"github.com/containernetworking/plugins/pkg/ns"
 	k8s "github.com/intel/multus-cni/k8sclient"
 	"github.com/intel/multus-cni/logging"
-	"github.com/intel/multus-cni/types"
+	types "github.com/intel/multus-cni/types/v1"
 	"github.com/vishvananda/netlink"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
